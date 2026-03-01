@@ -49,9 +49,9 @@ test.describe("랜딩페이지 렌더링", () => {
     await expect(cards).toHaveCount(3);
   });
 
-  test("FAQ 아이템 4개 렌더링", async ({ page }) => {
+  test("FAQ 아이템 20개 렌더링", async ({ page }) => {
     const items = page.locator(".faq-item");
-    await expect(items).toHaveCount(4);
+    await expect(items).toHaveCount(20);
   });
 
   test("Target Filter 섹션 렌더링", async ({ page }) => {

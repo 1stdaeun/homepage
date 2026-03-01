@@ -119,12 +119,12 @@ describe("Schema.org JSON-LD 검증", () => {
     expect(accounting.name).toBe("진산회계법인");
   });
 
-  it("FAQPage 스키마에 4개 질문 포함", () => {
+  it("FAQPage 스키마에 20개 질문 포함", () => {
     const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
     const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
     const faqPage = schemas.find((s) => s["@type"] === "FAQPage");
     expect(faqPage).toBeDefined();
-    expect(faqPage.mainEntity.length).toBe(4);
+    expect(faqPage.mainEntity.length).toBe(20);
   });
 
   it("Service 스키마 존재", () => {
@@ -133,6 +133,22 @@ describe("Schema.org JSON-LD 검증", () => {
     const service = schemas.find((s) => s["@type"] === "Service");
     expect(service).toBeDefined();
     expect(service.serviceType).toContain("가업승계");
+  });
+
+  it("HowTo 스키마에 4단계 포함", () => {
+    const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+    const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
+    const howTo = schemas.find((s) => s["@type"] === "HowTo");
+    expect(howTo).toBeDefined();
+    expect(howTo.step.length).toBe(4);
+  });
+
+  it("Review 스키마에 3개 후기 포함", () => {
+    const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+    const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
+    const withReviews = schemas.find((s) => s.review);
+    expect(withReviews).toBeDefined();
+    expect(withReviews.review.length).toBe(3);
   });
 });
 
@@ -171,9 +187,9 @@ describe("콘텐츠 섹션 검증", () => {
     expect(cards.length).toBe(3);
   });
 
-  it("FAQ 아이템 4개 존재", () => {
+  it("FAQ 아이템 20개 존재", () => {
     const items = doc.querySelectorAll(".faq-item");
-    expect(items.length).toBe(4);
+    expect(items.length).toBe(20);
   });
 
   it("Target Filter 섹션 존재 (추천/비추천)", () => {
