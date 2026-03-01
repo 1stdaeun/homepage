@@ -104,6 +104,83 @@ const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/실제URL/exec";
 
 ---
 
+## Part 0-B: Google Forms 연동 가이드
+
+커스텀 폼 UI를 유지하면서 Google Forms의 `formResponse` 엔드포인트로 데이터를 전송하는 방식입니다.
+
+### 1. Google Forms 생성
+
+1. [Google Forms](https://docs.google.com/forms/) 접속 → **새 양식** 클릭
+2. 아래 6개 질문을 순서대로 추가:
+
+| 순서 | 질문 제목     | 질문 유형 |
+| ---- | ------------- | --------- |
+| 1    | 대표자명      | 단답형    |
+| 2    | 회사명        | 단답형    |
+| 3    | 연락처        | 단답형    |
+| 4    | 이메일        | 단답형    |
+| 5    | 연매출 규모   | 드롭다운  |
+| 6    | 추가 문의사항 | 장문형    |
+
+3. 연매출 규모 드롭다운 옵션: `50억 미만`, `50억~100억`, `100억~300억`, `300억~1000억`, `1000억 이상`
+
+### 2. formResponse URL 찾기
+
+1. Google Forms 편집 화면에서 **미리보기** (눈 모양 아이콘) 클릭
+2. 브라우저 URL을 확인: `https://docs.google.com/forms/d/e/FORM_ID/viewform`
+3. `viewform`을 `formResponse`로 변경:
+   ```
+   https://docs.google.com/forms/d/e/FORM_ID/formResponse
+   ```
+   이것이 `actionUrl` 값입니다.
+
+### 3. Entry ID 찾기
+
+1. Google Forms 미리보기 페이지에서 **마우스 우클릭 → 페이지 소스 보기**
+2. `Ctrl+F`로 `entry.` 검색
+3. 각 질문에 대응하는 `entry.XXXXXXXXX` 값을 찾습니다.
+   - 보통 `FB_PUBLIC_LOAD_DATA` 안에 entry ID가 포함되어 있습니다.
+   - 또는 각 input 태그의 `name` 속성에서 확인 가능
+
+**대안 방법** (더 쉬움):
+
+1. 미리보기 페이지에서 Chrome 개발자 도구 (F12) → Network 탭 열기
+2. 폼을 채우고 제출
+3. Network 탭에서 `formResponse` 요청을 찾아 Form Data에서 entry ID 확인
+
+### 4. main.js 설정값 교체
+
+`js/main.js` 파일 상단의 `GOOGLE_FORM_CONFIG` 객체를 실제 값으로 교체:
+
+```javascript
+const GOOGLE_FORM_CONFIG = {
+  actionUrl: "https://docs.google.com/forms/d/e/실제_FORM_ID/formResponse",
+  fields: {
+    name: "entry.실제_ID_1",
+    company: "entry.실제_ID_2",
+    phone: "entry.실제_ID_3",
+    email: "entry.실제_ID_4",
+    revenue: "entry.실제_ID_5",
+    message: "entry.실제_ID_6",
+  },
+};
+```
+
+### 5. 연동 테스트
+
+1. 로컬에서 `npm run dev`로 사이트 실행
+2. 폼을 작성하고 제출
+3. Google Forms의 **응답** 탭에서 데이터 수신 확인
+4. Google Forms 응답 → **Google Sheets에서 보기**로 스프레드시트 연동 가능
+
+### 주의사항
+
+- Google Forms는 `no-cors` 모드로 전송하므로, 응답 코드를 직접 확인할 수 없습니다. 전송 후 자동으로 "성공" 메시지를 표시합니다.
+- 기존 Google Apps Script 방식도 계속 사용 가능합니다 (별도 설정 필요).
+- Google Forms에서 **이메일 알림**을 설정하면 새 응답 시 즉시 알림을 받을 수 있습니다: 응답 탭 → ⋮ → "새 응답에 대한 이메일 알림 받기"
+
+---
+
 ## Part A: SEO/GEO 최적화 To-Do 리스트
 
 ### 필수 (우선순위 높음)

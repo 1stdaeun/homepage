@@ -34,9 +34,14 @@ test.describe("랜딩페이지 렌더링", () => {
     await expect(cards).toHaveCount(4);
   });
 
-  test("Team 카드 5개 렌더링", async ({ page }) => {
-    const cards = page.locator(".team-card");
-    await expect(cards).toHaveCount(5);
+  test("전문가 프로필 2개 렌더링", async ({ page }) => {
+    const profiles = page.locator(".expert-profile");
+    await expect(profiles).toHaveCount(2);
+  });
+
+  test("협력 전문가 네트워크 3개 항목 렌더링", async ({ page }) => {
+    const items = page.locator(".partner-item");
+    await expect(items).toHaveCount(3);
   });
 
   test("Process 단계 4개 렌더링", async ({ page }) => {
@@ -57,6 +62,15 @@ test.describe("랜딩페이지 렌더링", () => {
   test("Target Filter 섹션 렌더링", async ({ page }) => {
     await expect(page.locator(".target-filter")).toBeVisible();
     await expect(page.locator(".target-col.recommended")).toBeVisible();
+  });
+
+  test("Insights 카드 3개 렌더링", async ({ page }) => {
+    const cards = page.locator(".insight-card");
+    await expect(cards).toHaveCount(3);
+  });
+
+  test("Insights 섹션 렌더링", async ({ page }) => {
+    await expect(page.locator("#insights")).toBeVisible();
   });
 
   test("Contact 폼 렌더링", async ({ page }) => {

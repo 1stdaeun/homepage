@@ -9,6 +9,7 @@ import {
   initContactForm,
   showFormMessage,
   hideFormMessage,
+  GOOGLE_FORM_CONFIG,
 } from "../js/main.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -143,6 +144,23 @@ describe("Schema.org JSON-LD 검증", () => {
     expect(howTo.step.length).toBe(4);
   });
 
+  it("Person 스키마 2개 존재 (E-E-A-T)", () => {
+    const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+    const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
+    const persons = schemas.filter((s) => s["@type"] === "Person");
+    expect(persons.length).toBe(2);
+    expect(persons[0].name).toBe("김진수");
+    expect(persons[1].name).toBe("박세영");
+  });
+
+  it("Blog 스키마에 3개 블로그 포스트 포함", () => {
+    const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+    const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
+    const blog = schemas.find((s) => s["@type"] === "Blog");
+    expect(blog).toBeDefined();
+    expect(blog.blogPost.length).toBe(3);
+  });
+
   it("Review 스키마에 3개 후기 포함", () => {
     const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
     const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
@@ -172,9 +190,14 @@ describe("콘텐츠 섹션 검증", () => {
     expect(cards.length).toBe(4);
   });
 
-  it("Team 카드 5개 존재 (5개 분야)", () => {
-    const cards = doc.querySelectorAll(".team-card");
-    expect(cards.length).toBe(5);
+  it("전문가 프로필 2개 존재", () => {
+    const profiles = doc.querySelectorAll(".expert-profile");
+    expect(profiles.length).toBe(2);
+  });
+
+  it("협력 전문가 네트워크 3개 항목 존재", () => {
+    const items = doc.querySelectorAll(".partner-item");
+    expect(items.length).toBe(3);
   });
 
   it("Process 단계 4개 존재", () => {
@@ -199,6 +222,16 @@ describe("콘텐츠 섹션 검증", () => {
     const notRecommended = doc.querySelector(".target-col.not-recommended");
     expect(recommended).not.toBeNull();
     expect(notRecommended).not.toBeNull();
+  });
+
+  it("Insights 카드 3개 존재", () => {
+    const cards = doc.querySelectorAll(".insight-card");
+    expect(cards.length).toBe(3);
+  });
+
+  it("Insights 카드에 카테고리 태그 존재", () => {
+    const categories = doc.querySelectorAll(".insight-category");
+    expect(categories.length).toBe(3);
   });
 
   it("Contact 폼에 필수 필드 존재", () => {
@@ -335,6 +368,20 @@ describe("폼 제출 동작 검증", () => {
     expect(msgBox.classList.contains("success")).toBe(true);
 
     dom.window.close();
+  });
+});
+
+describe("Google Forms 설정 검증", () => {
+  it("GOOGLE_FORM_CONFIG에 필수 필드가 정의됨", () => {
+    expect(GOOGLE_FORM_CONFIG).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.actionUrl).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields.name).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields.company).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields.phone).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields.email).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields.revenue).toBeDefined();
+    expect(GOOGLE_FORM_CONFIG.fields.message).toBeDefined();
   });
 });
 

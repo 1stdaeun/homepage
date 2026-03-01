@@ -1,6 +1,22 @@
 // ===== Configuration =====
-/** @type {string} Google Apps Script Web App URL — 배포 후 실제 URL로 교체 */
-const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
+/**
+ * Google Forms 연동 설정
+ * 아래 값을 실제 Google Forms에서 가져온 값으로 교체하세요.
+ * 자세한 방법은 SEO_GEO_가이드.md의 "Google Forms 연동 가이드"를 참고하세요.
+ */
+const GOOGLE_FORM_CONFIG = {
+  /** Google Forms formResponse URL — 폼 생성 후 실제 URL로 교체 */
+  actionUrl: "YOUR_GOOGLE_FORM_ACTION_URL",
+  /** 각 폼 필드에 대응하는 Google Forms entry ID */
+  fields: {
+    name: "entry.XXXXXXXXX1",
+    company: "entry.XXXXXXXXX2",
+    phone: "entry.XXXXXXXXX3",
+    email: "entry.XXXXXXXXX4",
+    revenue: "entry.XXXXXXXXX5",
+    message: "entry.XXXXXXXXX6",
+  },
+};
 
 // ===== DOM Ready =====
 document.addEventListener("DOMContentLoaded", () => {
@@ -154,8 +170,8 @@ async function handleFormSubmit(e) {
 
   try {
     if (
-      GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" ||
-      !GOOGLE_SCRIPT_URL
+      GOOGLE_FORM_CONFIG.actionUrl === "YOUR_GOOGLE_FORM_ACTION_URL" ||
+      !GOOGLE_FORM_CONFIG.actionUrl
     ) {
       // Demo mode: simulate success
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -166,11 +182,20 @@ async function handleFormSubmit(e) {
       );
       form.reset();
     } else {
-      await fetch(GOOGLE_SCRIPT_URL, {
+      // Build Google Forms formData with entry IDs
+      const gformData = new FormData();
+      const fields = GOOGLE_FORM_CONFIG.fields;
+      if (data.name) gformData.append(fields.name, data.name);
+      if (data.company) gformData.append(fields.company, data.company);
+      if (data.phone) gformData.append(fields.phone, data.phone);
+      if (data.email) gformData.append(fields.email, data.email);
+      if (data.revenue) gformData.append(fields.revenue, data.revenue);
+      if (data.message) gformData.append(fields.message, data.message);
+
+      await fetch(GOOGLE_FORM_CONFIG.actionUrl, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: gformData,
       });
 
       // no-cors returns opaque response — assume success
@@ -223,5 +248,5 @@ export {
   handleFormSubmit,
   showFormMessage,
   hideFormMessage,
-  GOOGLE_SCRIPT_URL,
+  GOOGLE_FORM_CONFIG,
 };
