@@ -1,18 +1,24 @@
 // ===== Configuration =====
 /**
  * Google Forms 연동 설정
- * 아래 값을 실제 Google Forms에서 가져온 값으로 교체하세요.
- * 자세한 방법은 SEO_GEO_가이드.md의 "Google Forms 연동 가이드"를 참고하세요.
+ *
+ * 【설정 방법】
+ * 1. Google Forms (https://docs.google.com/forms/d/1m58xX-Y8Cn0BB0SHM1Cr-eBbCrqLDEQQjSp6JFZYP-Y/edit) 열기
+ * 2. 폼을 "공개"로 설정 (설정 > 응답 > 로그인 필요 해제)
+ * 3. "응답" 탭 > 스프레드시트 아이콘 클릭 > "새 스프레드시트 만들기" → 자동 연동
+ * 4. 폼의 "미리보기" 열기 → 브라우저 소스보기(Ctrl+U)에서 "entry." 검색
+ * 5. 각 필드에 해당하는 entry.XXXXXXXXX ID를 아래에 입력
+ * 6. actionUrl: "https://docs.google.com/forms/d/e/[공개폼ID]/formResponse"
+ *    - 공개폼 ID는 폼 미리보기 URL의 /d/e/ 다음 부분입니다
  */
 const GOOGLE_FORM_CONFIG = {
-  /** Google Forms formResponse URL — 폼 생성 후 실제 URL로 교체 */
-  actionUrl: "YOUR_GOOGLE_FORM_ACTION_URL",
-  /** 각 폼 필드에 대응하는 Google Forms entry ID */
+  actionUrl:
+    "https://docs.google.com/forms/d/1m58xX-Y8Cn0BB0SHM1Cr-eBbCrqLDEQQjSp6JFZYP-Y/formResponse",
   fields: {
     name: "entry.XXXXXXXXX1",
-    company: "entry.XXXXXXXXX2",
-    phone: "entry.XXXXXXXXX3",
-    email: "entry.XXXXXXXXX4",
+    phone: "entry.XXXXXXXXX2",
+    company: "entry.XXXXXXXXX3",
+    industry: "entry.XXXXXXXXX4",
     revenue: "entry.XXXXXXXXX5",
     message: "entry.XXXXXXXXX6",
   },
@@ -21,8 +27,7 @@ const GOOGLE_FORM_CONFIG = {
 // ===== DOM Ready =====
 document.addEventListener("DOMContentLoaded", () => {
   initScrollAnimations();
-  initHeader();
-  initMobileNav();
+  initTopbarScroll();
   initFaqAccordion();
   initContactForm();
   initSmoothScroll();
@@ -30,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ===== Scroll Animations (IntersectionObserver) =====
 function initScrollAnimations() {
-  const elements = document.querySelectorAll(".fade-in");
+  const elements = document.querySelectorAll(".animate");
   if (!elements.length) return;
 
   const observer = new IntersectionObserver(
@@ -38,7 +43,6 @@ function initScrollAnimations() {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("visible");
-          observer.unobserve(entry.target);
         }
       });
     },
@@ -48,39 +52,17 @@ function initScrollAnimations() {
   elements.forEach((el) => observer.observe(el));
 }
 
-// ===== Header Scroll Effect =====
-function initHeader() {
-  const header = document.querySelector(".header");
-  if (!header) return;
+// ===== Topbar Scroll Effect =====
+function initTopbarScroll() {
+  const topbar = document.getElementById("topbar");
+  if (!topbar) return;
 
   const onScroll = () => {
-    header.classList.toggle("scrolled", window.scrollY > 10);
+    topbar.classList.toggle("scrolled", window.scrollY > 20);
   };
 
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
-}
-
-// ===== Mobile Navigation =====
-function initMobileNav() {
-  const toggle = document.querySelector(".nav-toggle");
-  const navList = document.querySelector(".nav-list");
-  if (!toggle || !navList) return;
-
-  toggle.addEventListener("click", () => {
-    const isOpen = navList.classList.toggle("open");
-    toggle.classList.toggle("open", isOpen);
-    toggle.setAttribute("aria-expanded", String(isOpen));
-  });
-
-  // Close nav when clicking a link
-  navList.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      navList.classList.remove("open");
-      toggle.classList.remove("open");
-      toggle.setAttribute("aria-expanded", "false");
-    });
-  });
 }
 
 // ===== FAQ Accordion =====
@@ -88,20 +70,18 @@ function initFaqAccordion() {
   const items = document.querySelectorAll(".faq-item");
 
   items.forEach((item) => {
-    const btn = item.querySelector(".faq-question");
+    const btn = item.querySelector(".faq-q");
     if (!btn) return;
 
     btn.addEventListener("click", () => {
       const isOpen = item.classList.contains("open");
 
-      // Close all others
       items.forEach((other) => {
         other.classList.remove("open");
-        const otherBtn = other.querySelector(".faq-question");
+        const otherBtn = other.querySelector(".faq-q");
         if (otherBtn) otherBtn.setAttribute("aria-expanded", "false");
       });
 
-      // Toggle current
       if (!isOpen) {
         item.classList.add("open");
         btn.setAttribute("aria-expanded", "true");
@@ -129,9 +109,9 @@ function initSmoothScroll() {
   });
 }
 
-// ===== Contact Form — Google Sheets Integration =====
+// ===== Contact Form — Google Forms Integration =====
 function initContactForm() {
-  const form = document.getElementById("contact-form");
+  const form = document.getElementById("diagnosisForm");
   if (!form) return;
 
   form.addEventListener("submit", handleFormSubmit);
@@ -144,73 +124,56 @@ async function handleFormSubmit(e) {
   e.preventDefault();
 
   const form = /** @type {HTMLFormElement} */ (e.target);
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const msgBox = form.querySelector(".form-message");
+  const submitBtn = form.querySelector(".form-submit");
+  const msgBox = document.getElementById("formMessage");
 
   if (!submitBtn || !msgBox) return;
 
-  // Validate privacy checkbox
-  const privacyCheck = /** @type {HTMLInputElement|null} */ (
-    form.querySelector("#privacy")
-  );
-  if (privacyCheck && !privacyCheck.checked) {
-    showFormMessage(msgBox, "error", "개인정보 수집 동의에 체크해주세요.");
-    return;
-  }
-
-  // Collect form data
   const formData = new FormData(form);
   const data = Object.fromEntries(formData.entries());
 
-  // UI feedback: loading
   const originalText = submitBtn.textContent;
-  submitBtn.textContent = "전송 중...";
+  submitBtn.textContent = "\uc804\uc1a1 \uc911...";
   submitBtn.disabled = true;
   hideFormMessage(msgBox);
 
   try {
-    if (
-      GOOGLE_FORM_CONFIG.actionUrl === "YOUR_GOOGLE_FORM_ACTION_URL" ||
-      !GOOGLE_FORM_CONFIG.actionUrl
-    ) {
-      // Demo mode: simulate success
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      showFormMessage(
-        msgBox,
-        "success",
-        "신청이 완료되었습니다! 24시간 내에 전문가가 연락드리겠습니다.",
-      );
-      form.reset();
-    } else {
-      // Build Google Forms formData with entry IDs
+    const isConfigured =
+      GOOGLE_FORM_CONFIG.actionUrl &&
+      !GOOGLE_FORM_CONFIG.fields.name.includes("XXXXXXXXX");
+
+    if (isConfigured) {
       const gformData = new FormData();
       const fields = GOOGLE_FORM_CONFIG.fields;
-      if (data.name) gformData.append(fields.name, data.name);
-      if (data.company) gformData.append(fields.company, data.company);
-      if (data.phone) gformData.append(fields.phone, data.phone);
-      if (data.email) gformData.append(fields.email, data.email);
-      if (data.revenue) gformData.append(fields.revenue, data.revenue);
-      if (data.message) gformData.append(fields.message, data.message);
+      if (data.name) gformData.append(fields.name, String(data.name));
+      if (data.phone) gformData.append(fields.phone, String(data.phone));
+      if (data.company) gformData.append(fields.company, String(data.company));
+      if (data.industry)
+        gformData.append(fields.industry, String(data.industry));
+      if (data.revenue) gformData.append(fields.revenue, String(data.revenue));
+      if (data.message) gformData.append(fields.message, String(data.message));
 
       await fetch(GOOGLE_FORM_CONFIG.actionUrl, {
         method: "POST",
         mode: "no-cors",
         body: gformData,
       });
-
-      // no-cors returns opaque response — assume success
-      showFormMessage(
-        msgBox,
-        "success",
-        "신청이 완료되었습니다! 24시간 내에 전문가가 연락드리겠습니다.",
-      );
-      form.reset();
+    } else {
+      // Demo mode
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
+
+    showFormMessage(
+      msgBox,
+      "success",
+      "\u2713 \uc2e0\uccad\uc774 \uc644\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4! 1\uc601\uc5c5\uc77c \uc774\ub0b4 \uc804\ub2f4 \ud68c\uacc4\uc0ac/\uc138\ubb34\uc0ac\uac00 \uc5f0\ub77d\ub4dc\ub9ac\uaca0\uc2b5\ub2c8\ub2e4.",
+    );
+    form.reset();
   } catch {
     showFormMessage(
       msgBox,
       "error",
-      "전송에 실패했습니다. 잠시 후 다시 시도하시거나 전화로 문의해주세요.",
+      "\uc804\uc1a1\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4. \uc7a0\uc2dc \ud6c4 \ub2e4\uc2dc \uc2dc\ub3c4\ud558\uc2dc\uac70\ub098 02-6958-8537\ub85c \uc804\ud654\ud574\uc8fc\uc138\uc694.",
     );
   } finally {
     submitBtn.textContent = originalText;
@@ -234,19 +197,17 @@ function showFormMessage(el, type, text) {
 function hideFormMessage(el) {
   el.textContent = "";
   el.className = "form-message";
-  el.style.display = "none";
 }
 
-// Named exports for testing (tree-shaken in production build)
+// Named exports for testing
 export {
+  GOOGLE_FORM_CONFIG,
   initScrollAnimations,
-  initHeader,
-  initMobileNav,
+  initTopbarScroll,
   initFaqAccordion,
   initContactForm,
   initSmoothScroll,
   handleFormSubmit,
   showFormMessage,
   hideFormMessage,
-  GOOGLE_FORM_CONFIG,
 };
