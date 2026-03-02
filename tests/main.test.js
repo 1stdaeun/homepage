@@ -66,7 +66,7 @@ describe("index.html 구조 검증", () => {
   it("canonical URL 존재", () => {
     const canonical = doc.querySelector('link[rel="canonical"]');
     expect(canonical).not.toBeNull();
-    expect(canonical.getAttribute("href")).toContain("jinsancpa");
+    expect(canonical.getAttribute("href")).toContain("consulting.lightax.biz");
   });
 
   it("Open Graph 메타 태그 존재", () => {

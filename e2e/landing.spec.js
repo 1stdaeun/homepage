@@ -207,6 +207,6 @@ test.describe("SEO 메타 태그 검증", () => {
 
     // canonical
     const canonical = await page.getAttribute('link[rel="canonical"]', "href");
-    expect(canonical).toContain("jinsancpa");
+    expect(canonical).toContain("consulting.lightax.biz");
   });
 });
