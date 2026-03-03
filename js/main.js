@@ -13,14 +13,14 @@
  */
 const GOOGLE_FORM_CONFIG = {
   actionUrl:
-    "https://docs.google.com/forms/d/1m58xX-Y8Cn0BB0SHM1Cr-eBbCrqLDEQQjSp6JFZYP-Y/formResponse",
+    "https://docs.google.com/forms/d/e/1FAIpQLSfN58RqF0HtixjwIxj1mOlPMSEY74xwV8fzJjJYKf1EUAJLkg/formResponse",
   fields: {
-    name: "entry.XXXXXXXXX1",
-    phone: "entry.XXXXXXXXX2",
-    company: "entry.XXXXXXXXX3",
-    industry: "entry.XXXXXXXXX4",
-    revenue: "entry.XXXXXXXXX5",
-    message: "entry.XXXXXXXXX6",
+    name: "entry.1548966480",
+    phone: "entry.957197118",
+    company: "entry.675951058",
+    industry: "entry.606032891",
+    revenue: "entry.615169160",
+    message: "entry.22374982",
   },
 };
 
@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initFaqAccordion();
   initContactForm();
   initSmoothScroll();
+  initMobileNav();
 });
 
 // ===== Scroll Animations (IntersectionObserver) =====
@@ -105,6 +106,30 @@ function initSmoothScroll() {
       const top =
         target.getBoundingClientRect().top + window.scrollY - headerOffset;
       window.scrollTo({ top, behavior: "smooth" });
+    });
+  });
+}
+
+// ===== Mobile Navigation =====
+function initMobileNav() {
+  const hamburger = document.querySelector(".hamburger");
+  const navLinks = document.querySelector(".nav-links");
+  if (!hamburger || !navLinks) return;
+
+  hamburger.addEventListener("click", () => {
+    const isOpen = navLinks.classList.toggle("open");
+    hamburger.setAttribute("aria-expanded", String(isOpen));
+    hamburger.setAttribute(
+      "aria-label",
+      isOpen ? "\uba54\ub274 \ub2eb\uae30" : "\uba54\ub274 \uc5f4\uae30",
+    );
+  });
+
+  navLinks.querySelectorAll(".nav-link").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("open");
+      hamburger.setAttribute("aria-expanded", "false");
+      hamburger.setAttribute("aria-label", "\uba54\ub274 \uc5f4\uae30");
     });
   });
 }
@@ -207,6 +232,7 @@ export {
   initFaqAccordion,
   initContactForm,
   initSmoothScroll,
+  initMobileNav,
   handleFormSubmit,
   showFormMessage,
   hideFormMessage,

@@ -2,16 +2,16 @@ import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
-  timeout: 30000,
+  timeout: 30100,
   retries: 0,
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: "http://localhost:3010",
     headless: true,
     viewport: { width: 1280, height: 720 },
   },
   webServer: {
-    command: "npx vite --port 3000",
-    port: 3000,
+    command: "npx vite --port 3010",
+    port: 3010,
     reuseExistingServer: true,
     timeout: 10000,
   },

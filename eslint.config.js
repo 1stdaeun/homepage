@@ -29,6 +29,14 @@ export default [
     },
   },
   {
+    files: ["api/**/*.js"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+      },
+    },
+  },
+  {
     ignores: ["dist/**", "node_modules/**", "tests/**"],
   },
 ];

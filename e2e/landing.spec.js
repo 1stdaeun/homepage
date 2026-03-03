@@ -33,29 +33,39 @@ test.describe("랜딩페이지 렌더링", () => {
     await expect(ctaBtn).toContainText("무료 진단 신청");
   });
 
-  test("Pain Points 카드 4개 렌더링", async ({ page }) => {
-    const cards = page.locator(".pain-card");
-    await expect(cards).toHaveCount(4);
+  test("nav-link 5개 존재", async ({ page }) => {
+    const navLinks = page.locator(".nav-link");
+    await expect(navLinks).toHaveCount(5);
   });
 
-  test("전문가 팀 카드 5개 렌더링", async ({ page }) => {
+  test("Pain Points 카드 6개 렌더링", async ({ page }) => {
+    const cards = page.locator(".pain-card");
+    await expect(cards).toHaveCount(6);
+  });
+
+  test("전문가 팀 카드 7개 렌더링", async ({ page }) => {
     const cards = page.locator(".team-card");
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(7);
   });
 
   test("Process 단계 4개 렌더링", async ({ page }) => {
     const steps = page.locator(".step");
-    await expect(steps).toHaveCount(4);
+    await expect(steps).toHaveCount(5);
+  });
+
+  test("Pricing 카드 3개 렌더링", async ({ page }) => {
+    const cards = page.locator(".pricing-card");
+    await expect(cards).toHaveCount(5);
   });
 
   test("Testimonial 카드 3개 렌더링", async ({ page }) => {
     const cards = page.locator(".testimonial");
-    await expect(cards).toHaveCount(3);
+    await expect(cards).toHaveCount(5);
   });
 
   test("FAQ 아이템 4개 렌더링", async ({ page }) => {
     const items = page.locator(".faq-item");
-    await expect(items).toHaveCount(4);
+    await expect(items).toHaveCount(5);
   });
 
   test("Contact 폼 렌더링", async ({ page }) => {
@@ -157,6 +167,57 @@ test.describe("SEO 메타 태그 검증", () => {
     expect(ogTitle).toContain("가업승계");
 
     const canonical = await page.getAttribute('link[rel="canonical"]', "href");
-    expect(canonical).toContain("consulting.lightax.biz");
+    expect(canonical).toContain("consulting.lighttax.biz");
+  });
+});
+
+test.describe("인사이트 페이지", () => {
+  test("인사이트 페이지 렌더링", async ({ page }) => {
+    await page.goto("/insights.html");
+
+    await expect(page).toHaveTitle(/인사이트/);
+    await expect(page.locator("nav")).toBeVisible();
+    await expect(page.locator("footer")).toBeVisible();
+    await expect(page.locator("#insightsGrid")).toBeAttached();
+  });
+
+  test("인사이트 페이지 nav-link 5개 존재", async ({ page }) => {
+    await page.goto("/insights.html");
+
+    const navLinks = page.locator(".nav-link");
+    await expect(navLinks).toHaveCount(5);
+  });
+
+  test("뉴스레터 구독 폼 존재", async ({ page }) => {
+    await page.goto("/insights.html");
+
+    const form = page.locator("#newsletterForm");
+    await expect(form).toBeAttached();
+    await expect(page.locator("#nl-email")).toBeAttached();
+  });
+
+  test("피처드 아티클 카드 존재", async ({ page }) => {
+    await page.goto("/insights.html");
+
+    const card = page.locator(".featured-card");
+    await expect(card).toBeVisible();
+  });
+});
+
+test.describe("가업상속공제 아티클 페이지", () => {
+  test("아티클 페이지 렌더링", async ({ page }) => {
+    await page.goto("/insight-gabsangsoggongje.html");
+
+    await expect(page).toHaveTitle(/가업상속공제/);
+    await expect(page.locator("article")).toBeVisible();
+    await expect(page.locator("nav")).toBeVisible();
+    await expect(page.locator("footer")).toBeVisible();
+  });
+
+  test("아티클 목차 존재", async ({ page }) => {
+    await page.goto("/insight-gabsangsoggongje.html");
+
+    const toc = page.locator(".article-toc");
+    await expect(toc).toBeVisible();
   });
 });

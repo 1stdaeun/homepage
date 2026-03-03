@@ -5,11 +5,17 @@ export default defineConfig({
   build: {
     outDir: "dist",
     rollupOptions: {
-      input: "index.html",
+      input: {
+        main: "index.html",
+        insights: "insights.html",
+        location: "location.html",
+        "insight-gabsangsoggongje": "insight-gabsangsoggongje.html",
+      },
     },
   },
   server: {
-    port: 3000,
+    port: 3010,
+    strictPort: true,
     open: false,
   },
 });

@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
-Sitemap: https://consulting.lightax.biz/sitemap.xml
+Disallow: /api/
+Sitemap: https://consulting.lighttax.biz/sitemap.xml

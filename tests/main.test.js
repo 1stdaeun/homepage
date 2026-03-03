@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import {
   initFaqAccordion,
   initContactForm,
+  initMobileNav,
   showFormMessage,
   hideFormMessage,
   GOOGLE_FORM_CONFIG,
@@ -57,7 +58,7 @@ describe("index.html 구조 검증", () => {
   it("canonical URL 존재", () => {
     const canonical = doc.querySelector('link[rel="canonical"]');
     expect(canonical).not.toBeNull();
-    expect(canonical.getAttribute("href")).toContain("consulting.lightax.biz");
+    expect(canonical.getAttribute("href")).toContain("consulting.lighttax.biz");
   });
 
   it("Open Graph 메타 태그 존재", () => {
@@ -82,6 +83,17 @@ describe("index.html 구조 검증", () => {
     const nav = doc.querySelector("nav");
     expect(nav.getAttribute("aria-label")).toBeTruthy();
   });
+
+  it("geo 메타 태그 존재", () => {
+    const geoRegion = doc.querySelector('meta[name="geo.region"]');
+    expect(geoRegion).not.toBeNull();
+    expect(geoRegion.getAttribute("content")).toBe("KR-11");
+  });
+
+  it("hreflang 태그 존재", () => {
+    const hreflang = doc.querySelector('link[hreflang="ko"]');
+    expect(hreflang).not.toBeNull();
+  });
 });
 
 describe("네비게이션 검증", () => {
@@ -96,6 +108,17 @@ describe("네비게이션 검증", () => {
     const ctaBtn = doc.querySelector(".topbar-cta");
     expect(ctaBtn).not.toBeNull();
     expect(ctaBtn.textContent).toContain("무료 진단 신청");
+  });
+
+  it("nav-link 5개 존재", () => {
+    const navLinks = doc.querySelectorAll(".nav-link");
+    expect(navLinks.length).toBe(5);
+  });
+
+  it("hamburger 버튼 존재", () => {
+    const hamburger = doc.querySelector(".hamburger");
+    expect(hamburger).not.toBeNull();
+    expect(hamburger.getAttribute("aria-label")).toBeTruthy();
   });
 });
 
@@ -122,6 +145,14 @@ describe("Schema.org JSON-LD 검증", () => {
     expect(faqPage).toBeDefined();
     expect(faqPage.mainEntity.length).toBe(4);
   });
+
+  it("LocalBusiness 스키마 존재", () => {
+    const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
+    const schemas = Array.from(scripts).map((s) => JSON.parse(s.textContent));
+    const local = schemas.find((s) => s["@type"] === "LocalBusiness");
+    expect(local).toBeDefined();
+    expect(local.geo).toBeDefined();
+  });
 });
 
 describe("콘텐츠 섹션 검증", () => {
@@ -139,16 +170,24 @@ describe("콘텐츠 섹션 검증", () => {
     expect(hero.querySelector(".btn-secondary")).not.toBeNull();
   });
 
-  it("Pain Points 카드 4개 존재", () => {
-    expect(doc.querySelectorAll(".pain-card").length).toBe(4);
+  it("Pain Points 카드 6개 존재", () => {
+    expect(doc.querySelectorAll(".pain-card").length).toBe(6);
   });
 
-  it("전문가 팀 카드 5개 존재", () => {
-    expect(doc.querySelectorAll(".team-card").length).toBe(5);
+  it("전문가 팀 카드 7개 존재", () => {
+    expect(doc.querySelectorAll(".team-card").length).toBe(7);
+  });
+
+  it("팀 리드 프로필 2개 존재", () => {
+    expect(doc.querySelectorAll(".team-lead-card").length).toBe(2);
   });
 
   it("Process 단계 4개 존재", () => {
     expect(doc.querySelectorAll(".step").length).toBe(4);
+  });
+
+  it("Pricing 카드 3개 존재", () => {
+    expect(doc.querySelectorAll(".pricing-card").length).toBe(3);
   });
 
   it("Testimonial 카드 3개 존재", () => {
@@ -231,6 +270,28 @@ describe("FAQ 아코디언 동작 검증", () => {
     btn2.click();
     expect(items[0].classList.contains("open")).toBe(false);
     expect(items[1].classList.contains("open")).toBe(true);
+
+    dom.window.close();
+  });
+});
+
+describe("모바일 네비게이션 동작 검증", () => {
+  it("hamburger 클릭 시 nav-links open 토글", () => {
+    const dom = setupDOM();
+    initMobileNav();
+
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+
+    expect(navLinks.classList.contains("open")).toBe(false);
+
+    hamburger.click();
+    expect(navLinks.classList.contains("open")).toBe(true);
+    expect(hamburger.getAttribute("aria-expanded")).toBe("true");
+
+    hamburger.click();
+    expect(navLinks.classList.contains("open")).toBe(false);
+    expect(hamburger.getAttribute("aria-expanded")).toBe("false");
 
     dom.window.close();
   });
