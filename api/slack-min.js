@@ -79,6 +79,19 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  // Read raw body first (needed for all POST handling)
+  const rawBody = await getRawBody(req);
+
+  // Handle Slack url_verification challenge (no auth needed)
+  try {
+    const body = JSON.parse(rawBody);
+    if (body.type === "url_verification") {
+      return res.status(200).json({ challenge: body.challenge });
+    }
+  } catch {
+    // Not JSON — continue to normal payload handling
+  }
+
   const signingSecret = process.env.MIN_SLACK_SIGNING_SECRET;
   const ghToken = process.env.MIN_GH_ACTIONS_TOKEN;
   const repo = process.env.VERCEL_GIT_REPO_SLUG
@@ -87,19 +100,6 @@ export default async function handler(req, res) {
 
   if (!signingSecret || !ghToken) {
     return res.status(500).json({ error: "Missing configuration" });
-  }
-
-  // Read raw body for signature verification
-  const rawBody = await getRawBody(req);
-
-  // Handle Slack url_verification challenge
-  try {
-    const body = JSON.parse(rawBody);
-    if (body.type === "url_verification") {
-      return res.status(200).json({ challenge: body.challenge });
-    }
-  } catch {
-    // Not JSON — continue to normal payload handling
   }
 
   // Verify Slack signature
