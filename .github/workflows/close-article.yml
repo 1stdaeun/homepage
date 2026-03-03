@@ -1,0 +1,26 @@
+name: "[민] Close Article PR"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to close"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr close ${{ github.event.inputs.pr_number }} \
+            --repo ${{ github.repository }} \
+            --delete-branch \
+            --comment "반려됨 — Slack에서 반려 처리되었습니다."
+          echo "PR #${{ github.event.inputs.pr_number }} closed"

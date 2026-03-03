@@ -221,3 +221,25 @@ test.describe("가업상속공제 아티클 페이지", () => {
     await expect(toc).toBeVisible();
   });
 });
+
+test.describe("빌드 생성 아티클 페이지", () => {
+  test("생성된 아티클 페이지 렌더링", async ({ page }) => {
+    // Build-generated article (from sample markdown)
+    const response = await page.goto("/insight-gabsangsoggongje.html");
+    expect(response.status()).toBe(200);
+
+    await expect(page.locator("article")).toBeVisible();
+    await expect(page.locator(".article-author")).toBeVisible();
+    await expect(page.locator(".article-cta")).toBeVisible();
+  });
+
+  test("인사이트 목록에서 아티클 링크 동작", async ({ page }) => {
+    await page.goto("/insights.html");
+
+    const featuredCard = page.locator(".featured-card").first();
+    await expect(featuredCard).toBeVisible();
+
+    const href = await featuredCard.getAttribute("href");
+    expect(href).toContain("/insight-");
+  });
+});

@@ -1,0 +1,53 @@
+name: "[민] Notify Slack"
+
+on:
+  workflow_dispatch:
+    inputs:
+      meta_path:
+        description: "Path to article markdown file"
+        required: true
+      pr_url:
+        description: "Pull request URL"
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Extract article metadata
+        run: |
+          FILE="${{ github.event.inputs.meta_path }}"
+          # Extract frontmatter fields with grep/sed (no extra deps needed)
+          TITLE=$(grep '^title:' "$FILE" | sed 's/^title: *"//;s/"$//')
+          SUBTITLE=$(grep '^subtitle:' "$FILE" | sed 's/^subtitle: *"//;s/"$//')
+          DESC=$(grep '^description:' "$FILE" | sed 's/^description: *"//;s/"$//')
+          DATE=$(grep '^date:' "$FILE" | sed 's/^date: *"//;s/"$//')
+          TAGS=$(grep '^tags:' "$FILE" | sed 's/^tags: *\[//;s/\]$//')
+          SLUG=$(grep '^slug:' "$FILE" | sed 's/^slug: *"//;s/"$//')
+
+          # Write JSON meta
+          jq -n \
+            --arg title "$TITLE" \
+            --arg subtitle "$SUBTITLE" \
+            --arg description "$DESC" \
+            --arg date "$DATE" \
+            --arg tags "$TAGS" \
+            --arg slug "$SLUG" \
+            '{title: $title, subtitle: $subtitle, description: $description, date: $date, tags: $tags, slug: $slug}' \
+            > /tmp/article-meta.json
+
+      - name: Send Slack message
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.MIN_SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.MIN_SLACK_CHANNEL_ID }}
+        run: node scripts/slack-message.js /tmp/article-meta.json "${{ github.event.inputs.pr_url }}"

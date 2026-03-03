@@ -29,10 +29,12 @@ export default [
     },
   },
   {
-    files: ["api/**/*.js"],
+    files: ["api/**/*.js", "scripts/**/*.js"],
     languageOptions: {
       globals: {
         process: "readonly",
+        Buffer: "readonly",
+        URLSearchParams: "readonly",
       },
     },
   },

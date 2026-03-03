@@ -87,7 +87,7 @@ describe("insights.html 구조 검증", () => {
   it("피처드 아티클 카드 존재", () => {
     const card = doc.querySelector(".featured-card");
     expect(card).not.toBeNull();
-    expect(card.getAttribute("href")).toContain("gabsangsoggongje");
+    expect(card.getAttribute("href")).toContain("/insight-");
   });
 
   it("인사이트 CTA 섹션 존재", () => {

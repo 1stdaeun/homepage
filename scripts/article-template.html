@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO 기본 -->
+    <title>{{title}} | {{subtitle}} — 진산회계법인</title>
+    <meta name="description" content="{{description}}" />
+    <link
+      rel="canonical"
+      href="https://consulting.lighttax.biz/insight-{{slug}}"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Geo -->
+    <meta name="geo.region" content="KR-11" />
+    <meta name="geo.placename" content="Seoul" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="{{title}} | 진산회계법인" />
+    <meta property="og:description" content="{{description}}" />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:url"
+      content="https://consulting.lighttax.biz/insight-{{slug}}"
+    />
+    <meta property="og:locale" content="ko_KR" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Noto+Serif+KR:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Schema.org Article -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": "{{title}} — {{subtitle}}",
+        "description": "{{description}}",
+        "datePublished": "{{date}}",
+        "dateModified": "{{date}}",
+        "author": {
+          "@type": "Person",
+          "name": "{{author}}",
+          "jobTitle": "{{authorRole}}"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "진산회계법인"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <!-- ─── TOP BAR ─── -->
+    <nav class="topbar" id="topbar" aria-label="메인 네비게이션">
+      <div class="topbar-inner">
+        <a href="/" class="logo" aria-label="진산회계법인 홈"
+          >진산회계법인<span class="logo-sub"
+            >김다은회계사 / 이상준세무사</span
+          ></a
+        >
+        <div class="nav-links">
+          <a href="/#team-leads" class="nav-link">소개</a>
+          <a href="/#process" class="nav-link">진행방법</a>
+          <a href="/#pricing" class="nav-link">수수료</a>
+          <a href="/location.html" class="nav-link">위치</a>
+          <a href="/insights.html" class="nav-link">인사이트</a>
+        </div>
+        <a href="/#contact" class="topbar-cta"
+          >무료 진단 신청 <span aria-hidden="true">→</span></a
+        >
+        <button class="hamburger" aria-label="메뉴 열기" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ─── ARTICLE ─── -->
+    <article class="article-page">
+      <div class="container">
+        <!-- Header -->
+        <header class="article-header animate">
+          <div class="article-meta">
+            <a href="/insights.html" class="article-back"
+              >&larr; 인사이트 목록</a
+            >
+            <time datetime="{{date}}">{{dateFormatted}}</time>
+          </div>
+          <h1>
+            {{title}}<br />
+            <span class="article-h1-sub">{{subtitle}}</span>
+          </h1>
+          <div class="article-tags">{{tagsHtml}}</div>
+          <div class="article-author">
+            {{authorAvatarHtml}}
+            <div>
+              <strong>{{author}}</strong>
+              <span>{{authorRole}}</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Body -->
+        <div class="article-body">
+          {{content}}
+
+          <!-- 출처 -->
+          {{referencesHtml}}
+        </div>
+
+        <!-- CTA -->
+        <div class="article-cta animate">
+          <h3>{{ctaTitle}}</h3>
+          <p>{{ctaDescription}}</p>
+          <a href="/#contact" class="btn-primary"
+            >무료 가업승계 진단 신청 <span aria-hidden="true">→</span></a
+          >
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── FOOTER ─── -->
+    <footer>
+      <div class="container">
+        <strong>진산회계법인</strong> 가업승계 컨설팅팀<br />
+        김다은 회계사 &amp; 이상준 세무사<br /><br />
+        &copy; 2026 진산회계법인. All rights reserved.
+      </div>
+    </footer>
+
+    <!-- ─── JavaScript ─── -->
+    <script type="module" src="/js/insights.js"></script>
+  </body>
+</html>

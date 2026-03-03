@@ -2010,6 +2010,15 @@ section {
   flex-shrink: 0;
 }
 
+.article-author-avatar-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+
 .article-author strong {
   display: block;
   font-size: 0.92rem;
@@ -2242,6 +2251,14 @@ section {
   line-height: 1.7;
   color: var(--text-body);
   padding: 2px 0;
+}
+
+.article-case-ruling {
+  border-left: 3px solid var(--accent);
+}
+
+.article-case-ruling h4::before {
+  content: "\2696\00a0";
 }
 
 .article-source {

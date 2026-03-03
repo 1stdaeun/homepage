@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/api/insights", "destination": "/api/insights.js" }]
+  "rewrites": [
+    { "source": "/api/insights", "destination": "/api/insights.js" },
+    { "source": "/api/slack-min", "destination": "/api/slack-min.js" }
+  ]
 }

@@ -1,0 +1,88 @@
+name: "[민] Generate Article"
+
+on:
+  schedule:
+    - cron: "0 0 * * 1" # 매주 월요일 09:00 KST (UTC 00:00)
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "아티클 주제 (비워두면 자동 선정)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate article via Claude API
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/generate-article-prompt.js "${{ github.event.inputs.topic || '' }}"
+
+      - name: Read article metadata
+        id: meta
+        run: |
+          echo "slug=$(jq -r .slug /tmp/article-meta.json)" >> "$GITHUB_OUTPUT"
+          echo "title=$(jq -r .title /tmp/article-meta.json)" >> "$GITHUB_OUTPUT"
+          echo "filename=$(jq -r .filename /tmp/article-meta.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Build articles (HTML generation)
+        run: npm run build:articles
+
+      - name: Create branch and commit
+        id: branch
+        run: |
+          BRANCH="article/${{ steps.meta.outputs.slug }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add content/articles/ "insight-*.html" sitemap.xml insights.html .prettierignore
+          git commit -m "feat: 새 아티클 — ${{ steps.meta.outputs.title }}"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "${{ steps.branch.outputs.branch }}" \
+            --title "📝 새 아티클: ${{ steps.meta.outputs.title }}" \
+            --body "$(cat <<'EOF'
+          ## 자동 생성 아티클
+
+          - **제목:** ${{ steps.meta.outputs.title }}
+          - **파일:** `content/articles/${{ steps.meta.outputs.filename }}`
+          - **슬러그:** ${{ steps.meta.outputs.slug }}
+
+          > Claude API로 자동 생성된 아티클입니다. Slack에서 승인/반려할 수 있습니다.
+          EOF
+          )")
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "PR created: $PR_URL"
+
+      - name: Trigger Slack notification
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run notify-slack.yml \
+            -f meta_path="content/articles/${{ steps.meta.outputs.filename }}" \
+            -f pr_url="${{ steps.pr.outputs.pr_url }}"
