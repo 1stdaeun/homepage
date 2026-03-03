@@ -70,6 +70,11 @@ function getRawBody(req) {
 }
 
 export default async function handler(req, res) {
+  // Allow GET for Slack URL verification during setup
+  if (req.method === "GET") {
+    return res.status(200).json({ ok: true });
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -86,6 +91,16 @@ export default async function handler(req, res) {
 
   // Read raw body for signature verification
   const rawBody = await getRawBody(req);
+
+  // Handle Slack url_verification challenge
+  try {
+    const body = JSON.parse(rawBody);
+    if (body.type === "url_verification") {
+      return res.status(200).json({ challenge: body.challenge });
+    }
+  } catch {
+    // Not JSON — continue to normal payload handling
+  }
 
   // Verify Slack signature
   const timestamp = req.headers["x-slack-request-timestamp"];
