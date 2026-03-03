@@ -50,22 +50,22 @@ test.describe("랜딩페이지 렌더링", () => {
 
   test("Process 단계 4개 렌더링", async ({ page }) => {
     const steps = page.locator(".step");
-    await expect(steps).toHaveCount(5);
+    await expect(steps).toHaveCount(4);
   });
 
   test("Pricing 카드 3개 렌더링", async ({ page }) => {
     const cards = page.locator(".pricing-card");
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(3);
   });
 
   test("Testimonial 카드 3개 렌더링", async ({ page }) => {
     const cards = page.locator(".testimonial");
-    await expect(cards).toHaveCount(5);
+    await expect(cards).toHaveCount(3);
   });
 
   test("FAQ 아이템 4개 렌더링", async ({ page }) => {
     const items = page.locator(".faq-item");
-    await expect(items).toHaveCount(5);
+    await expect(items).toHaveCount(4);
   });
 
   test("Contact 폼 렌더링", async ({ page }) => {
@@ -210,7 +210,7 @@ test.describe("가업상속공제 아티클 페이지", () => {
 
     await expect(page).toHaveTitle(/가업상속공제/);
     await expect(page.locator("article")).toBeVisible();
-    await expect(page.locator("nav")).toBeVisible();
+    await expect(page.locator("nav#topbar")).toBeVisible();
     await expect(page.locator("footer")).toBeVisible();
   });
 

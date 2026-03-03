@@ -54,11 +54,7 @@ describe("buildUserPrompt", () => {
   });
 
   it("includes specified topic when provided", () => {
-    const prompt = buildUserPrompt(
-      "사업무관자산",
-      [],
-      "2026-03-10",
-    );
+    const prompt = buildUserPrompt("사업무관자산", [], "2026-03-10");
     expect(prompt).toContain('지정된 주제: "사업무관자산"');
   });
 

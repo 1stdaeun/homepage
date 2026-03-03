@@ -31,9 +31,7 @@ describe("buildSlackBlocks", () => {
     const sections = blocks.filter((b) => b.type === "section");
     const allText = sections
       .map((s) =>
-        s.fields
-          ? s.fields.map((f) => f.text).join(" ")
-          : s.text?.text || "",
+        s.fields ? s.fields.map((f) => f.text).join(" ") : s.text?.text || "",
       )
       .join(" ");
     expect(allText).toContain(sampleMeta.title);
