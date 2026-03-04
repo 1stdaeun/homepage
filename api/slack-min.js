@@ -1,32 +1,3 @@
-import crypto from "crypto";
-
-export const config = {
-  api: { bodyParser: false },
-};
-
-function verifySlackSignature(signingSecret, timestamp, rawBody, signature) {
-  const fiveMinutes = 5 * 60;
-  const now = Math.floor(Date.now() / 1000);
-  if (Math.abs(now - Number(timestamp)) > fiveMinutes) return false;
-
-  const sigBasestring = `v0:${timestamp}:${rawBody}`;
-  const hmac = crypto
-    .createHmac("sha256", signingSecret)
-    .update(sigBasestring)
-    .digest("hex");
-  const computed = `v0=${hmac}`;
-
-  return crypto.timingSafeEqual(
-    Buffer.from(computed, "utf-8"),
-    Buffer.from(signature, "utf-8"),
-  );
-}
-
-function extractPrNumber(prUrl) {
-  const match = prUrl.match(/\/pull\/(\d+)/);
-  return match ? match[1] : null;
-}
-
 async function triggerWorkflow(workflowFile, prNumber, ghToken, repo) {
   const response = await fetch(
     `https://api.github.com/repos/${repo}/actions/workflows/${workflowFile}/dispatches`,
@@ -49,125 +20,74 @@ async function triggerWorkflow(workflowFile, prNumber, ghToken, repo) {
   }
 }
 
-async function updateSlackMessage(responseUrl, text) {
-  await fetch(responseUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      replace_original: false,
-      text,
-    }),
-  });
-}
-
-function getRawBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    req.on("data", (chunk) => chunks.push(chunk));
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
-    req.on("error", reject);
-  });
+function htmlResponse(res, title, message) {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  return res.status(200).send(`<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>${title}</title>
+<style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#f5f5f5}
+.card{background:#fff;border-radius:12px;padding:40px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+h1{font-size:48px;margin:0 0 16px}p{color:#555;font-size:18px}</style>
+</head><body><div class="card"><h1>${title}</h1><p>${message}</p></div></body></html>`);
 }
 
 export default async function handler(req, res) {
-  // Allow GET for Slack URL verification during setup
-  if (req.method === "GET") {
-    return res.status(200).json({ ok: true });
-  }
-
-  if (req.method !== "POST") {
+  if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Read raw body first (needed for all POST handling)
-  const rawBody = await getRawBody(req);
+  const { action, pr } = req.query;
 
-  // Handle Slack url_verification challenge (no auth needed)
-  try {
-    const body = JSON.parse(rawBody);
-    if (body.type === "url_verification") {
-      return res.status(200).json({ challenge: body.challenge });
-    }
-  } catch {
-    // Not JSON — continue to normal payload handling
+  if (!action || !pr) {
+    return htmlResponse(
+      res,
+      "\ud83d\udcdd",
+      "\uc2b9\uacc4 \uc5d0\ub514\ud130 MIN \uc5d4\ub4dc\ud3ec\uc778\ud2b8",
+    );
   }
 
-  const signingSecret = process.env.MIN_SLACK_SIGNING_SECRET;
   const ghToken = process.env.MIN_GH_ACTIONS_TOKEN;
   const repo = process.env.VERCEL_GIT_REPO_SLUG
     ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}`
-    : "rlaek/homepage";
+    : "1stdaeun/homepage";
 
-  if (!signingSecret || !ghToken) {
-    return res.status(500).json({ error: "Missing configuration" });
-  }
-
-  // Verify Slack signature
-  const timestamp = req.headers["x-slack-request-timestamp"];
-  const signature = req.headers["x-slack-signature"];
-
-  if (!verifySlackSignature(signingSecret, timestamp, rawBody, signature)) {
-    return res.status(401).json({ error: "Invalid signature" });
-  }
-
-  // Parse URL-encoded payload
-  const params = new URLSearchParams(rawBody);
-  const payload = JSON.parse(params.get("payload"));
-
-  const action = payload.actions?.[0];
-  if (!action) {
-    return res.status(400).json({ error: "No action found" });
-  }
-
-  const prUrl = action.value;
-  const prNumber = extractPrNumber(prUrl);
-  const responseUrl = payload.response_url;
-  const user = payload.user?.name || "unknown";
-
-  if (!prNumber) {
-    return res.status(400).json({ error: "Invalid PR URL" });
+  if (!ghToken) {
+    return htmlResponse(
+      res,
+      "\u26a0\ufe0f",
+      "\uc124\uc815 \uc624\ub958: GH_ACTIONS_TOKEN\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.",
+    );
   }
 
   try {
-    switch (action.action_id) {
-      case "approve_article":
-        await triggerWorkflow("merge-article.yml", prNumber, ghToken, repo);
-        await updateSlackMessage(
-          responseUrl,
-          `\u2705 *${user}*\ub2d8\uc774 \uc2b9\uc778\ud588\uc2b5\ub2c8\ub2e4. PR #${prNumber} \uba38\uc9c0 \uc911...`,
+    switch (action) {
+      case "approve":
+        await triggerWorkflow("merge-article.yml", pr, ghToken, repo);
+        return htmlResponse(
+          res,
+          "\u2705",
+          `PR #${pr} \uc2b9\uc778\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \uba38\uc9c0 \uc911...`,
         );
-        break;
 
-      case "request_revision":
-        await updateSlackMessage(
-          responseUrl,
-          `\u270f\ufe0f *${user}*\ub2d8\uc774 \uc218\uc815\uc744 \uc694\uccad\ud588\uc2b5\ub2c8\ub2e4. \uc774 \uc2a4\ub808\ub4dc\uc5d0 \ud53c\ub4dc\ubc31\uc744 \ub0a8\uaca8\uc8fc\uc138\uc694.`,
+      case "reject":
+        await triggerWorkflow("close-article.yml", pr, ghToken, repo);
+        return htmlResponse(
+          res,
+          "\u274c",
+          `PR #${pr} \ubc18\ub824\ub418\uc5c8\uc2b5\ub2c8\ub2e4.`,
         );
-        break;
-
-      case "reject_article":
-        await triggerWorkflow("close-article.yml", prNumber, ghToken, repo);
-        await updateSlackMessage(
-          responseUrl,
-          `\u274c *${user}*\ub2d8\uc774 \ubc18\ub824\ud588\uc2b5\ub2c8\ub2e4. PR #${prNumber} \ub2eb\ub294 \uc911...`,
-        );
-        break;
 
       default:
-        return res
-          .status(400)
-          .json({ error: `Unknown action: ${action.action_id}` });
+        return htmlResponse(
+          res,
+          "\u2753",
+          `\uc54c \uc218 \uc5c6\ub294 \uc561\uc158: ${action}`,
+        );
     }
   } catch (err) {
-    console.error("Action handler error:", err);
-    await updateSlackMessage(
-      responseUrl,
-      `\u26a0\ufe0f \ucc98\ub9ac \uc911 \uc624\ub958\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4: ${err.message}`,
+    return htmlResponse(
+      res,
+      "\u26a0\ufe0f",
+      `\uc624\ub958 \ubc1c\uc0dd: ${err.message}`,
     );
-    return res.status(500).json({ error: err.message });
   }
-
-  return res.status(200).json({ ok: true });
 }
-
-export { verifySlackSignature, extractPrNumber };

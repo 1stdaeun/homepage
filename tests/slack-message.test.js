@@ -11,23 +11,24 @@ const sampleMeta = {
 };
 
 const samplePrUrl = "https://github.com/rlaek/homepage/pull/42";
+const sampleBaseUrl = "https://consulting.lighttax.biz";
 
 describe("buildSlackBlocks", () => {
   it("returns an array of blocks", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
     expect(Array.isArray(blocks)).toBe(true);
     expect(blocks.length).toBeGreaterThan(0);
   });
 
   it("includes header block", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
     const header = blocks.find((b) => b.type === "header");
     expect(header).toBeDefined();
     expect(header.text.text).toContain("아티클");
   });
 
   it("includes title and subtitle in section fields", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
     const sections = blocks.filter((b) => b.type === "section");
     const allText = sections
       .map((s) =>
@@ -39,40 +40,34 @@ describe("buildSlackBlocks", () => {
   });
 
   it("includes PR link", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
-    const prSection = blocks.find(
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
+    const linkSection = blocks.find(
       (b) => b.type === "section" && b.text?.text?.includes("github.com"),
     );
-    expect(prSection).toBeDefined();
-    expect(prSection.text.text).toContain(samplePrUrl);
+    expect(linkSection).toBeDefined();
+    expect(linkSection.text.text).toContain(samplePrUrl);
   });
 
-  it("includes 3 action buttons", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
-    const actions = blocks.find((b) => b.type === "actions");
-    expect(actions).toBeDefined();
-    expect(actions.elements).toHaveLength(3);
+  it("includes approve and reject links", () => {
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
+    const linkSection = blocks.find(
+      (b) => b.type === "section" && b.text?.text?.includes("approve"),
+    );
+    expect(linkSection).toBeDefined();
+    expect(linkSection.text.text).toContain("action=approve&pr=42");
+    expect(linkSection.text.text).toContain("action=reject&pr=42");
   });
 
-  it("has correct action_ids for buttons", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
-    const actions = blocks.find((b) => b.type === "actions");
-    const actionIds = actions.elements.map((e) => e.action_id);
-    expect(actionIds).toContain("approve_article");
-    expect(actionIds).toContain("request_revision");
-    expect(actionIds).toContain("reject_article");
-  });
-
-  it("passes PR URL as button values", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
-    const actions = blocks.find((b) => b.type === "actions");
-    for (const el of actions.elements) {
-      expect(el.value).toBe(samplePrUrl);
-    }
+  it("includes approve link with correct base URL", () => {
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
+    const linkSection = blocks.find(
+      (b) => b.type === "section" && b.text?.text?.includes("approve"),
+    );
+    expect(linkSection.text.text).toContain(sampleBaseUrl);
   });
 
   it("includes tags in fields", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
     const sections = blocks.filter((b) => b.type === "section" && b.fields);
     const allFieldText = sections
       .flatMap((s) => s.fields.map((f) => f.text))
@@ -81,18 +76,24 @@ describe("buildSlackBlocks", () => {
   });
 
   it("includes dividers", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
     const dividers = blocks.filter((b) => b.type === "divider");
     expect(dividers.length).toBeGreaterThanOrEqual(2);
   });
 
   it("includes description as quote", () => {
-    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl);
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
     const descSection = blocks.find(
       (b) =>
         b.type === "section" && b.text?.text?.includes(sampleMeta.description),
     );
     expect(descSection).toBeDefined();
     expect(descSection.text.text).toMatch(/^>/);
+  });
+
+  it("has no actions block (link-based, not button-based)", () => {
+    const blocks = buildSlackBlocks(sampleMeta, samplePrUrl, sampleBaseUrl);
+    const actions = blocks.find((b) => b.type === "actions");
+    expect(actions).toBeUndefined();
   });
 });

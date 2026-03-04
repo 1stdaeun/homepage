@@ -1,14 +1,21 @@
 import fs from "fs";
 
-function buildSlackBlocks(meta, prUrl) {
+function buildSlackBlocks(meta, prUrl, baseUrl) {
   const { title, subtitle, description, tags, date } = meta;
 
   const tagsText = tags
     ? tags
         .split(",")
         .map((t) => t.trim())
-        .join(" · ")
+        .join(" \u00b7 ")
     : "";
+
+  // Extract PR number from URL
+  const prMatch = prUrl.match(/\/pull\/(\d+)/);
+  const prNumber = prMatch ? prMatch[1] : "";
+
+  const approveUrl = `${baseUrl}/api/slack-min?action=approve&pr=${prNumber}`;
+  const rejectUrl = `${baseUrl}/api/slack-min?action=reject&pr=${prNumber}`;
 
   return [
     {
@@ -53,50 +60,13 @@ function buildSlackBlocks(meta, prUrl) {
         text: `> ${description}`,
       },
     },
+    { type: "divider" },
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `<${prUrl}|GitHub PR \ud655\uc778\ud558\uae30>`,
+        text: `<${prUrl}|\ud83d\udccc GitHub PR \ud655\uc778\ud558\uae30>    <${approveUrl}|\u2705 \uc2b9\uc778\ud558\uae30>    <${rejectUrl}|\u274c \ubc18\ub824\ud558\uae30>`,
       },
-    },
-    { type: "divider" },
-    {
-      type: "actions",
-      elements: [
-        {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "\u2705 \uc2b9\uc778",
-            emoji: true,
-          },
-          style: "primary",
-          action_id: "approve_article",
-          value: prUrl,
-        },
-        {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "\u270f\ufe0f \uc218\uc815 \uc694\uccad",
-            emoji: true,
-          },
-          action_id: "request_revision",
-          value: prUrl,
-        },
-        {
-          type: "button",
-          text: {
-            type: "plain_text",
-            text: "\u274c \ubc18\ub824",
-            emoji: true,
-          },
-          style: "danger",
-          action_id: "reject_article",
-          value: prUrl,
-        },
-      ],
     },
   ];
 }
@@ -108,7 +78,8 @@ async function sendSlackMessage(meta, prUrl) {
   if (!token) throw new Error("SLACK_BOT_TOKEN is required");
   if (!channel) throw new Error("SLACK_CHANNEL_ID is required");
 
-  const blocks = buildSlackBlocks(meta, prUrl);
+  const baseUrl = process.env.SITE_URL || "https://consulting.lighttax.biz";
+  const blocks = buildSlackBlocks(meta, prUrl, baseUrl);
 
   const response = await fetch("https://slack.com/api/chat.postMessage", {
     method: "POST",
