@@ -2470,6 +2470,132 @@ footer strong {
   }
 }
 
+/* ─── FLOATING CTA ─── */
+.floating-cta {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.floating-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+}
+
+.floating-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+}
+
+.floating-phone {
+  background: #fff;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.floating-consult {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* ─── FOOTER ─── */
+.footer-inner {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 20px;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.footer-brand strong {
+  font-size: 1.1rem;
+}
+
+.footer-tagline {
+  font-size: 0.82rem;
+  opacity: 0.7;
+}
+
+.footer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-contact-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-size: 0.88rem;
+  opacity: 0.85;
+}
+
+.footer-phone {
+  color: var(--accent-light);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-phone:hover {
+  text-decoration: underline;
+}
+
+.footer-hours {
+  opacity: 0.65;
+  font-size: 0.82rem;
+}
+
+.footer-bottom {
+  font-size: 0.8rem;
+  opacity: 0.55;
+}
+
+@media (max-width: 640px) {
+  .floating-btn span {
+    display: none;
+  }
+
+  .floating-btn {
+    padding: 14px;
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    justify-content: center;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .footer-contact-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
 /* ─── PRINT ─── */
 @media print {
   .topbar,
@@ -2477,7 +2603,8 @@ footer strong {
   .cta-section,
   .form-section,
   .btn-primary,
-  .btn-secondary {
+  .btn-secondary,
+  .floating-cta {
     display: none !important;
   }
 
